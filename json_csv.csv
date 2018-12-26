@@ -1,3 +1,3 @@
-,customer_age,customer_max_bench,customer_name.first,customer_name.first.2,customer_name.last
-0,23,,Eric,E-Munny,Loreaux
-1,23,not 315,Tom,,Burke
+,customer_age,customer_name.first,customer_name.first.2,customer_name.last,customer_weight
+0,23,Eric,E-Money,Loreaux,
+1,23,Tom,,Burke,197

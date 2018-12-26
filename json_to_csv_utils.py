@@ -2,8 +2,6 @@
 
 # This is the limit of columns allowed for lists of multiple values
 # if the repLimit argument is invoked. Feel free to change.
-REPLIMIT = 3
-
 BLANKVALUE = ""
 
 def addStringValue(dictObj, key, value, row):
@@ -26,7 +24,7 @@ def addStringValue(dictObj, key, value, row):
         dictObj[key] = ([BLANKVALUE] * row) + [value]
 
 
-def addListValue(dictObj, key, listValue, row, repLimit = False):
+def addListValue(dictObj, key, listValue, row, repLimit = None):
     """Adds a list value to a dictionary of lists under a new or existing key,
         by using a different key for each item in the list.
 
@@ -34,12 +32,10 @@ def addListValue(dictObj, key, listValue, row, repLimit = False):
         dictObj: (dict) dictionary object to add value to
         key: (str) current key of interest (will serve as root for other keys)
         listValue: (list) current value of interest
-        row: (int) this gives you the ability to limit the amount of new columns created.
-            e.g. if customer_phone_number key has a list value of 10 numbers, will only create
-            a certain number of columns before discarding the rest.
-        repLimit: (bool) this gives you the ability to limit the amount of new columns created.
+        row: (int) current number of rows in dictionary object
+        repLimit: (None | int) max number of new columns created.
             e.g. if customer_id key has a list value of 10 keys, will only create
-            'REPLIMIT' columns and discard the rest.
+            <repLimit> columns and discard the rest.
 
     ------------------------------------------------------
     Returns:
@@ -52,7 +48,7 @@ def addListValue(dictObj, key, listValue, row, repLimit = False):
 
     for index, value in enumerate(listValue):
         if repLimit:
-            if index == REPLIMIT:
+            if index == repLimit:
                 break
         if index == 0:
             addValue(dictObj, key, value, row, stringList = False)
@@ -60,7 +56,7 @@ def addListValue(dictObj, key, listValue, row, repLimit = False):
             addValue(dictObj, key+"."+str(index+1), value, row, stringList = False)
 
 
-def addValue(dictObj, key, value, row, stringList = False, repLimit = False):
+def addValue(dictObj, key, value, row, stringList = False, repLimit = None):
     """Adds an arbitrary value to a dictionary of lists under a new or existing key.
     
     Args:
@@ -74,10 +70,9 @@ def addValue(dictObj, key, value, row, stringList = False, repLimit = False):
             key in a dict has a list of two ids, [123,321], stringList = False will lead to two columns,
             customer_id with value 123, & customer_id.2 with value 321. stringList = True will lead to
             one column, customer_id with value '[123, 321]')
-        repLimit: (int) used if stringList = False - likely unnecessary;
-            this gives you the ability to limit the amount of new columns created.
+        repLimit: (None | int) max number of new columns created.
             e.g. if customer_id key has a list value of 10 keys, will only create
-            'REPLIMIT' columns and discard the rest.
+            <repLimit> columns and discard the rest.
 
     ------------------------------------------------------
     Returns:
@@ -104,6 +99,38 @@ def addValue(dictObj, key, value, row, stringList = False, repLimit = False):
                 addStringValue(dictObj, key, str(value), row)
             else:
                 addListValue(dictObj, key, value, row, repLimit = repLimit)
+
+def addRow(rowObject, buckets, row, stringList = False, repLimit = None):
+    """Add a dictionary object of key-value pairs as a new row in the first bucket
+    
+    Args:
+        rowObject: (dict) dictionary object of key-value pairs to add as a row
+        buckets: (list of dicts) list of increasingly large buckets containing all added rows thus far
+        row: (int) current row of first bucket
+        stringList: (bool) whether entries in list form should be kept as a large string object,
+            or whether they should be enumerated as different columns (e.g. if a "customer_id"
+            key in a dict has a list of two ids, [123,321], stringList = False will lead to two columns,
+            customer_id with value 123, & customer_id.2 with value 321. stringList = True will lead to
+            one column, customer_id with value '[123, 321]')
+        repLimit: (None | int) max number of new columns created.
+            e.g. if customer_id key has a list value of 10 keys, will only create
+            <repLimit> columns and discard the rest.
+
+    ------------------------------------------------------
+    Returns:
+        NULL
+    """
+
+    for key in rowObject:
+        addValue(buckets[0], key, rowObject[key], row, stringList = stringList, repLimit = repLimit)
+    
+    # check if any keys in buckets did not receive a value for the new tuple, 
+    # and fill in blanks where appropriate
+    for key in buckets[0]:
+        if len(buckets[0][key]) < (row + 1):
+            buckets[0][key].append(BLANKVALUE)
+
+
 
 def dictDump(emptyDict, fillDict, emptyDictQuantity, fillDictQuantity):
     """Empty one set of dictionary values into another dictionary

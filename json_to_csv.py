@@ -13,25 +13,22 @@ from json_to_csv_utils import *
 # This default number has proven to work optimally.
 TRANSFERQUANTITY = 1000
 
-BLANKVALUE = ""
-
 parser = argparse.ArgumentParser()
 parser.add_argument('json_path',
                     help = "Path to either a JSON file or a directory of JSON files to convert into one csv")
-parser.add_argument('--save_path', default = '.',
-                    help = "Save path for new csv file")
-parser.add_argument('--filename', default = "json_csv.csv",
-                    help = "Filename for new csv file")
-parser.add_argument('--stringList', dest = "stringList",action='store_true',
+parser.add_argument('--save_path', default = '.', type = str,
+                    help = "Path to folder where new csv file will be saved")
+parser.add_argument('--filename', default = "json_csv.csv", type = str,
+                    help = "Name of new csv file")
+parser.add_argument('--repLimit', default = None, type = int,
+                    help = "Include this argument to put a limit on the amount of new columns created for lists of values if the stringList argument is not included.")
+parser.add_argument('--stringList', dest = "stringList", action='store_true',
                     help = "Include this argument to invoke the 'stringList' functionality, described in the README.txt file")
-parser.add_argument('--repLimit', dest = "repLimit", action = 'store_true',
-                    help = "Include this argument to put a limit on the amount of new columns created for lists of values if the stringList argument is not included. Actual limit can be tweaked in the json_to_csv_utils.py file")
 
 if __name__ == '__main__':
 
     args = parser.parse_args()
     json_path = args.json_path
-
     stringList = args.stringList
     repLimit = args.repLimit
 
@@ -42,6 +39,8 @@ if __name__ == '__main__':
     elif os.path.isfile(json_path):
         filenames = [json_path]
         json_path = "."
+ 
+    assert len(filenames) > 0, "No JSON files detected"
 
     allValues = {}
     allValuesQuantity = 0
@@ -49,7 +48,7 @@ if __name__ == '__main__':
     start = time.time()
     for file in filenames:
 
-        print("Opening file " + file)
+        print("Opening file {}...".format(file))
         json_file = open(os.path.join(json_path,file))
         jsonObjs = json.load(json_file)
         
@@ -61,23 +60,14 @@ if __name__ == '__main__':
         # keeping track of the number of rows that have been added to the first bucket
         row = -1
         
-        for item in tqdm(jsonObjs):
+        for rowObject in tqdm(jsonObjs):
             row += 1
             
-            for key in item:
-                # add value to the first bucket
-                addValue(buckets[0], key, item[key], row, stringList = stringList, repLimit = repLimit)
-
-            # add blank value for all columns that didn't get a value
-            for key in buckets[0]:
-                if len(buckets[0][key]) < (row + 1):
-                    buckets[0][key].append(BLANKVALUE)
-            
+            addRow(rowObject, buckets, row, stringList = stringList, repLimit = repLimit)
             quantities[0] += 1
             
             # check if bucket has filled to max
             if  quantities[0] == TRANSFERQUANTITY:
-                
                 # push bucket values to larger bucket, reset row count for first bucket
                 valuesPush(buckets, quantities, transferQuantity = TRANSFERQUANTITY)
                 row = -1
@@ -90,8 +80,8 @@ if __name__ == '__main__':
         sys.stdout.write("\r100%")
         sys.stdout.flush()
         
-        print("\n{} rows pushed from this JSON file.".format(len(jsonObjs)))
-        print("Closing file " + file)
+        print("\n{} rows added from this JSON file.".format(len(jsonObjs)))
+        print("Closing file {}...".format(file))
         json_file.close()
 
     finalFrame = pd.DataFrame(allValues)
@@ -100,7 +90,7 @@ if __name__ == '__main__':
         print("{} rows have been pushed from {} JSON files into a single dataframe.".format(allValuesQuantity, len(filenames)))
     
     end = time.time()
-    print("time elapsed: " + str(end - start))
+    print("time elapsed: {0:.3f} sec".format(end - start))
     print("writing csv to {}...".format(os.path.join(args.save_path, args.filename)))
     finalFrame.to_csv(os.path.join(args.save_path, args.filename))
     print("complete.")
