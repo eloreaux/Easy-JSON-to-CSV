@@ -50,15 +50,21 @@ If you choose to go with the second option, you can also limit the amount of new
 
 Here's how you would use this from the terminal:
 
-1. clone this repository and cd into it.
+1. Clone this repository and cd into it.
 
-2. call the json_to_csv.py file with an argument specifying a path to a json file or directory of json files to turn into a single csv file:
+2. Install dependencies:
+
+```sh
+$pip install -r requirements.txt
+```
+
+3. Call the json_to_csv.py file with an argument specifying a path to a json file or directory of json files to turn into a single csv file:
 
 ```sh
 $python json_to_csv.py <json_path>
 ```
 
-3. You can learn more about all the optional arguments by typing in the following:
+4. Learn more about all the optional arguments by typing in the following:
 
 ```sh
 $python json_to_csv.py -h
