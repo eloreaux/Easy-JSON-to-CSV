@@ -1,0 +1,8 @@
+[{"customer_name": {"first" : ["Eric","E-Munny"],
+			"last" : "Loreaux"},
+      "customer_age": "23"},
+      
+      {"customer_name": {"first" : "Tom",
+			"last" : "Burke"},
+       "customer_age": "23",
+       "customer_max_bench": "not 315"}]
