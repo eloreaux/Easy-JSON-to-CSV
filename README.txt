@@ -1,6 +1,5 @@
 # This is a series of functions for forcing a 
-JavaScript Object Notation structure (fully enumerated name
-as per Tom Burke's preferences) into a pandas dataframe object.
+JavaScript Object Notation data structure into a pandas dataframe object.
 
 The JSON object that this was written for was collected via an API and
     resembles the following structure:
@@ -20,19 +19,19 @@ The JSON object that this was written for was collected via an API and
       {customer_name: {"first" : "Tom",
 			"last" : "Burke"},
        customer_age: "23",
-       customer_max_bench: "not 315"}]
+       customer_weight: "197"}]
 
     it will return a dataframe of the following structure:
 
     customer_name.first customer_name.last  customer_age    customer_max_bench
     "Eric"              "Loreaux"           "23"            ""
-    "Tom"               "Burke"             "23"            "not 315"
+    "Tom"               "Burke"             "23"            "197"
 
     Notice the inclusion of a blank value for rows in which there was no value for a particular column. Feel free to tweak this value, it is located at the top of both .py files as the BLANKVALUE variable.
 
     The client has a choice for how to handle nested lists. Consider the following example:
 
-    [{customer_name: ["Eric","E-Munny"],
+    [{customer_name: ["Eric","E-Money"],
       customer_age: "23"},
       
       {customer_name: "Tom",
@@ -41,13 +40,13 @@ The JSON object that this was written for was collected via an API and
     1. if the stringList argument is set to True, the resulting dataframe will leave these lists as strings:
 
     customer_name           customer_age    
-    "['Eric','E-Munny']"    "23"
+    "['Eric','E-Money']"    "23"
     "Tom"                   "23"
 
     2. if the stringList argument is set to False, the resulting dataframe will create new columns for each value:
 
     customer_name   customer_name.2 customer_age
-    "Eric"          "E-Munny"       "23"
+    "Eric"          "E-Money"       "23"
     "Tom"           ""              "23"
 
     Keep in mind that the first option can be dangerous if you expect there to be lists of values other than strings.
